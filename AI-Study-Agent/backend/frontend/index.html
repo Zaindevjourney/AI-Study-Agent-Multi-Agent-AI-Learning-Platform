@@ -1,0 +1,622 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Study Agent - Complete Platform</title>
+  <style>
+    :root {
+      --bg-dark: #050816;
+      --bg-soft: #0f172a;
+      --panel: rgba(15, 23, 42, 0.94);
+      --panel-light: rgba(248, 250, 252, 0.08);
+      --border: rgba(148, 163, 184, 0.18);
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --primary: #7c3aed;
+      --primary-strong: #4338ca;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --shadow: 0 32px 90px rgba(8, 15, 39, 0.55);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      min-height: 100%;
+    }
+
+    body {
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: radial-gradient(circle at top left, rgba(124, 58, 237, 0.16), transparent 35%),
+                  radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.16), transparent 28%),
+                  linear-gradient(180deg, var(--bg-dark), #0b1224);
+      color: var(--text);
+      padding: 26px;
+    }
+
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    .login-page,
+    .dashboard-page {
+      display: none;
+    }
+
+    .login-page.active,
+    .dashboard-page.active {
+      display: block;
+    }
+
+    .login-box {
+      max-width: 460px;
+      margin: 100px auto;
+      padding: 42px;
+      border-radius: 30px;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.86));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px);
+    }
+
+    .login-box h1 {
+      margin-bottom: 18px;
+      text-align: center;
+      font-size: 2rem;
+      letter-spacing: 0.02em;
+      color: #eef2ff;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      transition: border-color 220ms ease, transform 220ms ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: rgba(124, 58, 237, 0.7);
+      transform: translateY(-1px);
+      box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.14);
+    }
+
+    button {
+      width: 100%;
+      padding: 14px 24px;
+      border-radius: 18px;
+      border: none;
+      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+      color: white;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 180ms ease, box-shadow 180ms ease;
+      box-shadow: 0 18px 30px rgba(124, 58, 237, 0.24);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 22px 36px rgba(124, 58, 237, 0.30);
+    }
+
+    button.secondary {
+      width: auto;
+      padding: 12px 20px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+    }
+
+    button.secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .header {
+      margin-bottom: 24px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 3vw, 3rem);
+      color: #eef2ff;
+      letter-spacing: -0.05em;
+    }
+
+    .header p {
+      margin: 0;
+      color: var(--text-muted);
+      max-width: 740px;
+      line-height: 1.75;
+    }
+
+    .user-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 20px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      color: var(--text);
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .tab-btn {
+      padding: 14px 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      font-weight: 600;
+      transition: transform 180ms ease, background 180ms ease;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.95), rgba(59, 130, 246, 0.95));
+      color: white;
+      transform: translateY(-1px);
+      border-color: transparent;
+    }
+
+    .tab-btn:hover {
+      background: rgba(124, 58, 237, 0.18);
+    }
+
+    .tab-content {
+      display: none;
+      background: rgba(15, 23, 42, 0.96);
+      border-radius: 28px;
+      padding: 36px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      transform: perspective(1200px) translateZ(0);
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .tab-content::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 28px;
+      pointer-events: none;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    }
+
+    .tab-content h2 {
+      margin-bottom: 18px;
+      color: #eef2ff;
+      font-size: 1.7rem;
+    }
+
+    .output-box {
+      position: relative;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      padding: 24px;
+      border-radius: 22px;
+      margin-top: 26px;
+      min-height: 180px;
+      max-height: 420px;
+      overflow: auto;
+      border-left: 5px solid var(--primary);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04), 0 20px 50px rgba(0, 0, 0, 0.22);
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+      line-height: 1.7;
+    }
+
+    .output-box.loading {
+      color: #c7d2fe;
+      border-left-color: rgba(124, 58, 237, 0.95);
+    }
+
+    .output-box.error {
+      color: #fecaca;
+      border-left-color: var(--danger);
+    }
+
+    .output-box.success {
+      color: #bbf7d0;
+      border-left-color: var(--success);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+    }
+
+    @media (max-width: 920px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 680px) {
+      body {
+        padding: 16px;
+      }
+
+      .login-box,
+      .tab-content {
+        padding: 26px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Login Page -->
+  <div class="login-page active">
+    <div class="login-box">
+      <h1>📚 AI Study Agent</h1>
+      <div class="form-group">
+        <label>User ID (optional)</label>
+        <input type="text" id="loginUserId" placeholder="Enter your ID or leave blank" />
+      </div>
+      <button onclick="login()">Enter Study Platform</button>
+    </div>
+  </div>
+
+  <!-- Dashboard Page -->
+  <div class="dashboard-page container">
+    <div class="header">
+      <h1>📚 AI Study Agent Dashboard</h1>
+      <button class="secondary" onclick="logout()">Logout</button>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('ask')">💬 Ask Tutor</button>
+      <button class="tab-btn" onclick="switchTab('notes')">📝 Generate Notes</button>
+      <button class="tab-btn" onclick="switchTab('quiz')">❓ Quiz</button>
+      <button class="tab-btn" onclick="switchTab('flashcards')">🎴 Flashcards</button>
+      <button class="tab-btn" onclick="switchTab('upload')">📄 Upload PDF</button>
+      <button class="tab-btn" onclick="switchTab('planner')">📅 Study Planner</button>
+    </div>
+
+    <!-- Ask Tutor Tab -->
+    <div id="ask" class="tab-content active">
+      <h2>Ask Your Tutor</h2>
+      <div class="form-group">
+        <label>Your Question</label>
+        <textarea id="askQuestion" placeholder="Ask anything..." rows="5"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Tutor Mode</label>
+        <select id="tutorMode">
+          <option value="normal">Normal Explanation</option>
+          <option value="eli10">Explain Like I'm 10</option>
+          <option value="compare">Compare & Contrast</option>
+          <option value="examples">Examples</option>
+        </select>
+      </div>
+      <button onclick="askTutor()">Get Answer</button>
+      <div id="askOutput" class="output-box"></div>
+    </div>
+
+    <!-- Notes Tab -->
+    <div id="notes" class="tab-content">
+      <h2>Generate Study Notes</h2>
+      <div class="form-group">
+        <label>Topic</label>
+        <input type="text" id="notesTopic" placeholder="e.g., Photosynthesis, French Revolution" />
+      </div>
+      <div class="form-group">
+        <label>Note Style</label>
+        <select id="notesStyle">
+          <option value="short">Short Summary</option>
+          <option value="bullet">Bullet Points</option>
+          <option value="detailed">Detailed</option>
+          <option value="formula">Formula Sheet</option>
+          <option value="definitions">Definitions</option>
+          <option value="important_topics">Important Topics</option>
+        </select>
+      </div>
+      <button onclick="generateNotes()">Generate Notes</button>
+      <div id="notesOutput" class="output-box"></div>
+    </div>
+
+    <!-- Quiz Tab -->
+    <div id="quiz" class="tab-content">
+      <h2>Generate Quiz</h2>
+      <div class="form-group">
+        <label>Topic</label>
+        <input type="text" id="quizTopic" placeholder="Topic for quiz" />
+      </div>
+      <div class="grid">
+        <div class="form-group">
+          <label>Question Type</label>
+          <select id="quizType">
+            <option value="mcq">Multiple Choice</option>
+            <option value="true_false">True/False</option>
+            <option value="fill_in_blank">Fill in the Blank</option>
+            <option value="short_question">Short Answer</option>
+            <option value="long_question">Long Answer</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Difficulty</label>
+          <select id="quizDifficulty">
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Number of Questions</label>
+        <input type="number" id="quizCount" placeholder="5" value="5" min="1" max="50" />
+      </div>
+      <button onclick="generateQuiz()">Generate Quiz</button>
+      <div id="quizOutput" class="output-box"></div>
+    </div>
+
+    <!-- Flashcards Tab -->
+    <div id="flashcards" class="tab-content">
+      <h2>Generate Flashcards</h2>
+      <div class="form-group">
+        <label>Topic</label>
+        <input type="text" id="flashcardTopic" placeholder="Topic for flashcards" />
+      </div>
+      <div class="grid">
+        <div class="form-group">
+          <label>Subject</label>
+          <input type="text" id="flashcardSubject" placeholder="e.g., Biology, Math" />
+        </div>
+        <div class="form-group">
+          <label>Number of Cards</label>
+          <input type="number" id="flashcardCount" placeholder="8" value="8" min="1" max="100" />
+        </div>
+      </div>
+      <button onclick="generateFlashcards()">Generate Flashcards</button>
+      <div id="flashcardsOutput" class="output-box"></div>
+    </div>
+
+    <!-- Upload PDF Tab -->
+    <div id="upload" class="tab-content">
+      <h2>Upload PDF Study Material</h2>
+      <div class="form-group">
+        <label>Select PDF File</label>
+        <input type="file" id="pdfFile" accept=".pdf" />
+      </div>
+      <div class="form-group">
+        <label>Document ID (optional)</label>
+        <input type="text" id="pdfDocId" placeholder="auto-generated if blank" />
+      </div>
+      <button onclick="uploadPDF()">Upload & Process</button>
+      <div id="uploadOutput" class="output-box"></div>
+    </div>
+
+    <!-- Study Planner Tab -->
+    <div id="planner" class="tab-content">
+      <h2>Create Study Plan</h2>
+      <div class="form-group">
+        <label>Subjects (comma-separated)</label>
+        <input type="text" id="plannerSubjects" placeholder="e.g., Math, Science, English" />
+      </div>
+      <div class="grid">
+        <div class="form-group">
+          <label>Exam Date</label>
+          <input type="date" id="plannerExamDate" />
+        </div>
+        <div class="form-group">
+          <label>Hours Per Day</label>
+          <input type="number" id="plannerHours" placeholder="3" value="3" min="1" max="12" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Weak Subjects (comma-separated, optional)</label>
+        <input type="text" id="plannerWeak" placeholder="e.g., Chemistry" />
+      </div>
+      <button onclick="createStudyPlan()">Generate Study Plan</button>
+      <div id="plannerOutput" class="output-box"></div>
+    </div>
+  </div>
+
+  <script>
+    let currentUser = null;
+
+    function login() {
+      const userId = document.getElementById('loginUserId').value.trim() || 'user_' + Date.now();
+      currentUser = userId;
+      localStorage.setItem('currentUser', userId);
+      document.querySelector('.login-page').classList.remove('active');
+      document.querySelector('.dashboard-page').classList.add('active');
+    }
+
+    function logout() {
+      currentUser = null;
+      localStorage.removeItem('currentUser');
+      document.querySelector('.dashboard-page').classList.remove('active');
+      document.querySelector('.login-page').classList.add('active');
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.getElementById('ask').classList.add('active');
+      document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.getElementById(tabName).classList.add('active');
+      document.querySelectorAll('.tab-btn').forEach((b, i) => {
+        const isActive = (tabName === 'ask' && i === 0) || (tabName === 'notes' && i === 1) || 
+                        (tabName === 'quiz' && i === 2) || (tabName === 'flashcards' && i === 3) ||
+                        (tabName === 'upload' && i === 4) || (tabName === 'planner' && i === 5);
+        b.classList.toggle('active', isActive);
+      });
+    }
+
+    async function callAPI(endpoint, data = null) {
+      try {
+        const opts = { method: 'POST', headers: { 'Content-Type': 'application/json' } };
+        if (data) opts.body = JSON.stringify(data);
+        const res = await fetch(endpoint, opts);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+      } catch (e) {
+        throw new Error(e.message);
+      }
+    }
+
+    function showOutput(elementId, content, isError = false) {
+      const el = document.getElementById(elementId);
+      el.innerHTML = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
+      el.className = `output-box ${isError ? 'error' : 'success'}`;
+    }
+
+    async function askTutor() {
+      const q = document.getElementById('askQuestion').value;
+      if (!q) { alert('Enter a question'); return; }
+      const out = document.getElementById('askOutput');
+      out.className = 'output-box loading';
+      out.innerHTML = '⏳ Thinking...';
+      try {
+        const res = await callAPI('/tutor', { question: q, mode: document.getElementById('tutorMode').value });
+        showOutput('askOutput', res.answer || JSON.stringify(res));
+      } catch (e) {
+        showOutput('askOutput', `Error: ${e.message}`, true);
+      }
+    }
+
+    async function generateNotes() {
+      const topic = document.getElementById('notesTopic').value;
+      if (!topic) { alert('Enter topic'); return; }
+      const out = document.getElementById('notesOutput');
+      out.className = 'output-box loading';
+      out.innerHTML = '⏳ Generating...';
+      try {
+        const res = await callAPI('/notes', { topic, style: document.getElementById('notesStyle').value });
+        showOutput('notesOutput', res.notes || JSON.stringify(res));
+      } catch (e) {
+        showOutput('notesOutput', `Error: ${e.message}`, true);
+      }
+    }
+
+    async function generateQuiz() {
+      const topic = document.getElementById('quizTopic').value;
+      if (!topic) { alert('Enter topic'); return; }
+      const out = document.getElementById('quizOutput');
+      out.className = 'output-box loading';
+      out.innerHTML = '⏳ Generating...';
+      try {
+        const res = await callAPI('/quiz', {
+          topic,
+          question_type: document.getElementById('quizType').value,
+          difficulty: document.getElementById('quizDifficulty').value,
+          num_questions: parseInt(document.getElementById('quizCount').value)
+        });
+        showOutput('quizOutput', res.questions ? res.questions.join('\n\n---\n\n') : JSON.stringify(res));
+      } catch (e) {
+        showOutput('quizOutput', `Error: ${e.message}`, true);
+      }
+    }
+
+    async function generateFlashcards() {
+      const topic = document.getElementById('flashcardTopic').value;
+      if (!topic) { alert('Enter topic'); return; }
+      const out = document.getElementById('flashcardsOutput');
+      out.className = 'output-box loading';
+      out.innerHTML = '⏳ Generating...';
+      try {
+        const res = await callAPI('/flashcards/generate', {
+          topic,
+          subject: document.getElementById('flashcardSubject').value || 'General',
+          num_cards: parseInt(document.getElementById('flashcardCount').value)
+        });
+        showOutput('flashcardsOutput', res.flashcards ? res.flashcards.map(c => `Q: ${c.question}\nA: ${c.answer}`).join('\n\n---\n\n') : JSON.stringify(res));
+      } catch (e) {
+        showOutput('flashcardsOutput', `Error: ${e.message}`, true);
+      }
+    }
+
+    async function uploadPDF() {
+      const file = document.getElementById('pdfFile').files[0];
+      if (!file) { alert('Select a PDF'); return; }
+      const out = document.getElementById('uploadOutput');
+      out.className = 'output-box loading';
+      out.innerHTML = '⏳ Uploading...';
+      try {
+        const fd = new FormData();
+        fd.append('file', file);
+        const res = await fetch('/upload-pdf', { method: 'POST', body: fd });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        showOutput('uploadOutput', `✅ Uploaded: ${data.doc_id}\nPages: ${data.num_pages_processed}\nChunks: ${data.num_chunks}`);
+      } catch (e) {
+        showOutput('uploadOutput', `Error: ${e.message}`, true);
+      }
+    }
+
+    async function createStudyPlan() {
+      const subjs = document.getElementById('plannerSubjects').value;
+      const date = document.getElementById('plannerExamDate').value;
+      if (!subjs || !date) { alert('Fill all fields'); return; }
+      const out = document.getElementById('plannerOutput');
+      out.className = 'output-box loading';
+      out.innerHTML = '⏳ Planning...';
+      try {
+        const res = await callAPI('/planner', {
+          subjects: subjs.split(',').map(s => s.trim()),
+          exam_date: date,
+          hours_per_day: parseFloat(document.getElementById('plannerHours').value),
+          weak_subjects: document.getElementById('plannerWeak').value ? document.getElementById('plannerWeak').value.split(',').map(s => s.trim()) : null
+        });
+        const plan = res.plan.map(d => `${d.date} (${d.day_name}): ${d.subject}`).join('\n');
+        showOutput('plannerOutput', plan);
+      } catch (e) {
+        showOutput('plannerOutput', `Error: ${e.message}`, true);
+      }
+    }
+
+    window.addEventListener('load', () => {
+      const user = localStorage.getItem('currentUser');
+      if (user) {
+        currentUser = user;
+        document.querySelector('.login-page').classList.remove('active');
+        document.querySelector('.dashboard-page').classList.add('active');
+      }
+    });
+  </script>
+</body>
+</html>
